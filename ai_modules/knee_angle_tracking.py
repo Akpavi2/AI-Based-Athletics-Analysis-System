@@ -58,67 +58,84 @@ def track_knee_angle(video_path):
 
     knee_angles = []
 
-    while cap.isOpened():
+    with mp_pose.Pose(
 
-        success, frame = cap.read()
+        static_image_mode=False,
 
-        if not success:
-            break
+        min_detection_confidence=0.5,
 
-        rgb_frame = cv2.cvtColor(
-            frame,
-            cv2.COLOR_BGR2RGB
-        )
+        min_tracking_confidence=0.5
 
-        results = pose.process(
-            rgb_frame
-        )
+    ) as pose:
 
-        if results.pose_landmarks:
+        frame_number = 0
 
-            landmarks = (
-                results.pose_landmarks.landmark
+        while cap.isOpened():
+
+            success, frame = cap.read()
+
+            if not success:
+                break
+
+            frame_number += 1
+
+            if frame_number % 10 != 0:
+                continue
+
+            rgb_frame = cv2.cvtColor(
+                frame,
+                cv2.COLOR_BGR2RGB
             )
 
-            hip = landmarks[
-                mp_pose.PoseLandmark.LEFT_HIP
-            ]
-
-            knee = landmarks[
-                mp_pose.PoseLandmark.LEFT_KNEE
-            ]
-
-            ankle = landmarks[
-                mp_pose.PoseLandmark.LEFT_ANKLE
-            ]
-
-            hip_point = (
-                hip.x,
-                hip.y
+            results = pose.process(
+                rgb_frame
             )
 
-            knee_point = (
-                knee.x,
-                knee.y
-            )
+            if results.pose_landmarks:
 
-            ankle_point = (
-                ankle.x,
-                ankle.y
-            )
+                landmarks = (
+                    results.pose_landmarks.landmark
+                )
 
-            knee_angle = calculate_angle(
+                hip = landmarks[
+                    mp_pose.PoseLandmark.LEFT_HIP
+                ]
 
-                hip_point,
+                knee = landmarks[
+                    mp_pose.PoseLandmark.LEFT_KNEE
+                ]
 
-                knee_point,
+                ankle = landmarks[
+                    mp_pose.PoseLandmark.LEFT_ANKLE
+                ]
 
-                ankle_point
-            )
+                hip_point = (
+                    hip.x,
+                    hip.y
+                )
 
-            knee_angles.append(
-                knee_angle
-            )
+                knee_point = (
+                    knee.x,
+                    knee.y
+                )
+
+                ankle_point = (
+                    ankle.x,
+                    ankle.y
+                )
+
+                knee_angle = calculate_angle(
+
+                    hip_point,
+
+                    knee_point,
+
+                    ankle_point
+                )
+
+                knee_angles.append(
+                    knee_angle
+                )
 
     cap.release()
 
@@ -133,6 +150,7 @@ def track_knee_angle(video_path):
             "average_knee_angle": 0,
 
             "efficiency": "No Data"
+
         }
 
     average_knee_angle = (
@@ -140,6 +158,7 @@ def track_knee_angle(video_path):
         sum(knee_angles)
 
         / len(knee_angles)
+
     )
 
     # =====================================
@@ -168,4 +187,5 @@ def track_knee_angle(video_path):
         ),
 
         "efficiency": efficiency
+
     }

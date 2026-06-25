@@ -18,6 +18,7 @@ from ai_modules.running_form_analysis import analyze_running_form
 from ai_modules.stride_analysis import analyze_stride
 from ai_modules.knee_angle_tracking import track_knee_angle
 from ai_modules.motion_speed_estimation import estimate_speed
+# from ai_modules.video_analysis import analyze_video
 
 
 # =====================================
@@ -28,7 +29,9 @@ def get_complete_ai_report(
     athlete_data,
     sprint_score,
     endurance_score,
-    jump_score
+    jump_score,
+    video_path=None
+
 ):
     """
     MASTER FUNCTION
@@ -99,17 +102,32 @@ def get_complete_ai_report(
     # 7. BIOMECHANICS ANALYSIS (CV)
     # ==============================
 
-    biomechanics = {
-        "pose": detect_pose(athlete_data),
-        "running_form": analyze_running_form(athlete_data),
-        "stride": analyze_stride(athlete_data),
-        "knee_angle": track_knee_angle(athlete_data),
-        "speed": estimate_speed(athlete_data)
-    }
+    if video_path:
+
+        biomechanics = {
+
+            "pose": detect_pose(video_path),
+
+            "running_form": analyze_running_form(video_path),
+
+            "stride": analyze_stride(video_path),
+
+            "knee_angle": track_knee_angle(video_path),
+
+            "speed": estimate_speed(video_path)
+
+        }
+    else:
+
+        biomechanics = {
+            "message": "No video uploaded"
+        }
 
     # ==============================
     # FINAL OUTPUT PACKAGE
     # ==============================
+
+    
 
     return {
         "recommendations": recommendations,

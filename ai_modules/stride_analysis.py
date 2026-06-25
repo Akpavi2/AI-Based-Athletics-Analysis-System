@@ -11,19 +11,28 @@ import mediapipe as mp
 
 mp_pose = mp.solutions.pose
 
-pose = mp_pose.Pose()
-
 # =====================================
 # STRIDE ANALYSIS FUNCTION
 # =====================================
 
 def analyze_stride(video_path):
 
+    pose = mp_pose.Pose(
+
+        static_image_mode=False,
+
+        min_detection_confidence=0.5,
+
+        min_tracking_confidence=0.5
+    )
+
     cap = cv2.VideoCapture(video_path)
 
     previous_left_ankle_x = None
 
     stride_movements = []
+
+    frame_number = 0
 
     while cap.isOpened():
 
@@ -32,12 +41,19 @@ def analyze_stride(video_path):
         if not success:
             break
 
+        frame_number += 1
+
+        if frame_number % 10 != 0:
+            continue
+
         rgb_frame = cv2.cvtColor(
             frame,
             cv2.COLOR_BGR2RGB
         )
 
-        results = pose.process(rgb_frame)
+        results = pose.process(
+            rgb_frame
+        )
 
         if results.pose_landmarks:
 
@@ -63,6 +79,8 @@ def analyze_stride(video_path):
             previous_left_ankle_x = left_ankle_x
 
     cap.release()
+
+    pose.close()
 
     # =====================================
     # FINAL ANALYSIS

@@ -47,6 +47,84 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 st.title("🏃 AI Athletics Platform")
+
+st.markdown("""
+<style>
+
+/* Main App Background */
+.stApp {
+    background-color: #0F0F0F;
+    color: white;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #111827;
+}
+
+/* Headers */
+h1, h2, h3 {
+    color: #00FF88;
+}
+
+/* Cards */
+div[data-testid="metric-container"] {
+    background-color: #1A1A1A;
+    border: 1px solid #0A66FF;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+/* Buttons */
+.stButton > button {
+    background-color: #0A66FF;
+    color: white;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+}
+
+.stButton > button:hover {
+    background-color: #00FF88;
+    color: black;
+}
+
+/* Input Fields */
+.stTextInput input,
+.stNumberInput input,
+.stTextArea textarea {
+    background-color: #1A1A1A;
+    color: white;
+}
+
+/* Select Boxes */
+.stSelectbox div {
+    background-color: #1A1A1A;
+}
+
+/* Expanders */
+.streamlit-expanderHeader {
+    background-color: #1A1A1A;
+    color: white;
+}
+
+/* Success Box */
+.stSuccess {
+    border-radius: 10px;
+}
+
+/* Warning Box */
+.stWarning {
+    border-radius: 10px;
+}
+
+/* Error Box */
+.stError {
+    border-radius: 10px;
+}
+
+</style>
+""", unsafe_allow_html=True)
 # =====================================
 # LOAD ML MODELS
 # =====================================
@@ -270,6 +348,18 @@ else:
     # =================================
     st.sidebar.title("🏃 Sports AI Menu")
 
+    # st.sidebar.success(
+    #     f"Logged in as: {st.session_state.role}"
+    # )
+
+    # if st.sidebar.button("Logout"):
+
+    st.sidebar.markdown("""
+    # 🏃 Athletics AI
+
+    ### Sports Analytics Platform
+    """)
+
     st.sidebar.success(
         f"Logged in as: {st.session_state.role}"
     )
@@ -400,7 +490,7 @@ else:
 
             if talent_menu == "Registration":
 
-                st.header("Athlete Registration")
+                st.header(" 🏃Athlete Registration")
 
                 st.session_state.name = st.text_input(
                     "Athlete Name"
@@ -408,35 +498,41 @@ else:
 
                 st.session_state.age = st.number_input(
                     "Age",
-                    min_value=10,
-                    max_value=40
+                    min_value=5,
+                    max_value=100
                 )
 
                 st.session_state.gender = st.selectbox(
                     "Gender",
-                    ["Male", "Female"]
+                    ["Male", "Female","Other"]
                 )
 
                 st.session_state.height = st.number_input(
                     "Height (cm)",
-                    min_value=1
+                    min_value=80
+
                 )
 
                 st.session_state.weight = st.number_input(
                     "Weight (kg)",
-                    min_value=1
+                    min_value=15
                 )
 
                 st.session_state.sprint_time = st.number_input(
-                    "Sprint Time"
+                    "Sprint Time (seconds)",
+                    min_value=0.0,
+                    step=0.1
                 )
 
                 st.session_state.endurance = st.number_input(
-                    "Endurance Score"
+                    "Endurance Score",
+                    min_value=0,
+                    max_value=100
                 )
 
                 st.session_state.vertical_jump = st.number_input(
-                    "Vertical Jump"
+                    "Vertical Jump",
+                    min_value=0
                 )
 
                 st.session_state.specialization = st.selectbox(
@@ -466,12 +562,107 @@ else:
                     type=["jpg", "png", "jpeg"]
                 )
 
+
+                if profile_photo:
+                    st.session_state.profile_photo = profile_photo
+
                 # if st.button("Save Data"):
 
                 #     st.session_state.data_saved = True
 
                 #     st.success("Athlete Data Saved Successfully")
+                confirm = st.checkbox(
+                    "I confirm the athlete details are correct"
+                )
+
+
                 if st.button("Save Data"):
+                    if not confirm:
+                        st.error("Please confirm athlete details")
+                        st.stop()
+
+                    # =========================
+                    # VALIDATION
+                    # =========================
+
+                    if st.session_state.name.strip() == "":
+                        st.error("Name cannot be empty")
+                        st.stop()
+
+                    clean_name = st.session_state.name.replace(" ", "")
+
+                    if len(clean_name) < 2:
+                        st.error("Name must contain at least 2 letters")
+                        st.stop()
+
+                    if not clean_name.isalpha():
+                        st.error("Name should contain only letters")
+                        st.stop()
+                        
+
+                    if st.session_state.age <= 0:
+                        st.error("Invalid age")
+                        st.stop()
+
+                    if st.session_state.height < 80:
+                        st.error("Please enter a valid height")
+                        st.stop()
+
+                    if st.session_state.weight < 15:
+                        st.error("Please enter a valid weight")
+                        st.stop()
+
+                    if st.session_state.sprint_time <= 0:
+                        st.error("Sprint time must be greater than 0")
+                        st.stop()    
+
+                    if st.session_state.sprint_time >60:
+                        st.error("Sprint time seems unrealistic")
+                        st.stop()
+
+                    if len(st.session_state.achievements) > 500:
+                        st.error("Achievements text is too long")
+                        st.stop()    
+
+                    # =====================================
+                    # DUPLICATE ATHLETE CHECK
+                    # =====================================
+
+                    cursor.execute("""
+
+                    SELECT COUNT(*)
+
+                    FROM athletes
+
+                    WHERE
+
+                    name = ?
+                    AND age = ?
+                    
+
+                    """, (
+
+                        st.session_state.name,
+                        st.session_state.age,
+                        
+
+                    ))
+
+                    existing = cursor.fetchone()[0]
+
+                    if existing > 0:
+                        st.warning("Athlete already exists in database")
+                        st.stop()
+
+                    # if st.session_state.height < 100:
+                    #     st.error("Height seems invalid")
+                    #     st.stop()
+
+                    # if st.session_state.weight < 20:
+                    #     st.error("Weight seems invalid")
+                    #     st.stop()    
+
+                    
 
     # =====================================
     # SAVE ATHLETE DATA TO DATABASE
@@ -541,17 +732,50 @@ else:
                             overall_score
                         ) = calculate_scores()
 
-                        st.write("BMI:", round(bmi, 2))
-                        st.write("Sprint Score:", sprint_score)
-                        st.write("Endurance Score:", endurance_score)
-                        st.write("Jump Score:", jump_score)
-                        st.write(
-                            "Overall Score:",
-                            round(overall_score, 2)
-                        )
+                        st.subheader("📊 Assessment Results")
+
+                    # First Row
+
+                        col1, col2, col3 = st.columns(3)
+
+                        with col1:
+                            st.metric(
+                                "BMI",
+                                round(bmi, 2)
+                            )
+
+                        with col2:
+                            st.metric(
+                                "Sprint Score",
+                                sprint_score
+                            )
+
+                        with col3:
+                            st.metric(
+                                "Endurance Score",
+                                endurance_score
+                            )
+
+                        # Second Row
+
+                        col4, col5 = st.columns(2)
+
+                        with col4:
+                            st.metric(
+                                "Jump Score",
+                                jump_score
+                            )
+
+                        with col5:
+                            st.metric(
+                                "Overall Score",
+                                round(overall_score, 2)
+                            )
 
                 else:
                     st.warning("Please Register Athlete First")
+
+
 
             # =================================
             # SCORING
@@ -559,7 +783,7 @@ else:
 
             elif talent_menu == "Scoring":
 
-                st.header("Performance Scoring")
+                st.header("📊 Performance Scoring")
 
                 if st.session_state.data_saved:
 
@@ -571,13 +795,31 @@ else:
                         overall_score
                     ) = calculate_scores()
 
-                    st.metric(
-                        "Overall Athlete Score",
-                        round(overall_score, 2)
+                    col1, col2, col3, col4, col5 = st.columns(5)
+
+                    with col1:
+                        st.metric("BMI", round(bmi, 2))
+
+                    with col2:
+                        st.metric("Sprint", sprint_score)
+
+                    with col3:
+                        st.metric("Endurance", endurance_score)
+
+                    with col4:
+                        st.metric("Jump", jump_score)
+
+                    with col5:
+                        st.metric("Overall", round(overall_score, 2))
+
+                    st.divider()
+
+                    st.success(
+                        f"Overall Athlete Rating: {round(overall_score, 2)}/100"
                     )
 
                 else:
-                    st.warning("Please Register Athlete First")
+                    st.warning("Please Register Athlete First")        
 
             # =================================
             # PREDICTION
@@ -597,25 +839,21 @@ else:
                         overall_score
                     ) = calculate_scores()
 
-                    input_data = [[
-                        st.session_state.age,
-                        st.session_state.height,
-                        st.session_state.weight,
-                        bmi,
-                        sprint_score,
-                        endurance_score,
-                        jump_score,
-                        overall_score
-                    ]]
+                    input_data = pd.DataFrame([{
+                        "age": st.session_state.age,
+                        "height": st.session_state.height,
+                        "weight": st.session_state.weight,
+                        "BMI": bmi,
+                        "sprint_score": sprint_score,
+                        "endurance_score": endurance_score,
+                        "jump_score": jump_score,
+                        "overall_score": overall_score
+                    }])
 
                     # Event Prediction
 
                     event_prediction = event_model.predict(
                         input_data
-                    )
-
-                    st.success(
-                        f"Predicted Event: {event_prediction[0]}"
                     )
 
                     # Category Prediction
@@ -624,9 +862,46 @@ else:
                         input_data
                     )
 
-                    st.success(
-                        f"Predicted Category: {category_prediction[0]}"
-                    )
+                    st.subheader("🎯 AI Prediction Results")
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        st.metric(
+                            "Predicted Event",
+                            event_prediction[0]
+                        )
+
+                    with col2:
+                        st.metric(
+                            "Athlete Category",
+                            category_prediction[0]
+                        )
+
+
+                    st.subheader("📋 Athlete Input Summary")
+
+                    summary_df = pd.DataFrame({
+                        "Metric": [
+                            "BMI",
+                            "Sprint Score",
+                            "Endurance Score",
+                            "Jump Score",
+                            "Overall Score"
+                        ],
+                        "Value": [
+                            round(bmi,2),
+                            sprint_score,
+                            endurance_score,
+                            jump_score,
+                            round(overall_score,2)
+                        ]
+                    })
+
+                    st.dataframe(
+                        summary_df,
+                        width="Stretch"
+                    )    
 
                 else:
                     st.warning("Please Register Athlete First")
@@ -635,7 +910,7 @@ else:
             # ANALYTICS
             # =================================
             elif talent_menu == "Analytics":
-                st.header("Performance Analytics")
+                st.header(" 📊 Performance Analytics")
 
                 if st.session_state.data_saved:
 
@@ -647,6 +922,49 @@ else:
                         jump_score,
                         overall_score
                     ) = calculate_scores()
+
+
+                    # =====================================
+                    # ATHLETE SUMMARY CARD
+                    # =====================================
+
+                    st.subheader("🏃 Athlete Summary")
+
+                    col1, col2 = st.columns([1,3])
+
+                    with col1:
+
+                        if "profile_photo" in st.session_state and st.session_state.profile_photo:
+
+                            st.image(
+                                st.session_state.profile_photo,
+                                width=120
+                            )
+
+                        else:
+
+                            st.image(
+                                "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                                width=120
+    )
+
+                    with col2:
+
+                        st.markdown(f"""
+                    ### {st.session_state.name}
+
+                    🏃 Event: {st.session_state.specialization}
+
+                    🎂 Age: {st.session_state.age}
+
+                    ⚥ Gender: {st.session_state.gender}
+
+                    📏 Height: {st.session_state.height} cm
+
+                    ⚖ Weight: {st.session_state.weight} kg
+
+                    📊 BMI: {round(bmi,2)}
+                    """)
 
             # =====================================
             # METRICS
@@ -673,6 +991,9 @@ else:
                         "Overall",
                         round(overall_score, 2)
                     )
+
+
+                    st.subheader("📈 Performance Breakdown")
 
                     # =====================================
                     # BAR CHART
@@ -710,6 +1031,64 @@ else:
                     )
 
                     st.pyplot(fig)
+
+
+                    # =====================================
+                    # PERFORMANCE TREND
+                    # =====================================
+
+                    st.subheader("📉 Performance Trend")
+
+                    trend_df = pd.DataFrame({
+                        "Week":[1,2,3,4,5],
+                        "Performance":[
+                            overall_score-20,
+                            overall_score-15,
+                            overall_score-10,
+                            overall_score-5,
+                            overall_score
+                        ]
+                    })
+
+                    st.line_chart(
+                        trend_df.set_index("Week")
+                    )
+
+
+
+                    # =====================================
+                    # ATHLETE ANALYSIS
+                    # =====================================
+
+                    st.subheader("🧠 Athlete Analysis")
+
+                    scores_dict = {
+                        "Sprint": sprint_score,
+                        "Endurance": endurance_score,
+                        "Jump": jump_score
+                    }
+
+                    best_skill = max(
+                        scores_dict,
+                        key=scores_dict.get
+                    )
+
+                    weak_skill = min(
+                        scores_dict,
+                        key=scores_dict.get
+                    )
+
+                    st.success(
+                        f"Best Skill: {best_skill}"
+                    )
+
+                    st.warning(
+                        f"Needs Improvement: {weak_skill}"
+                    )
+
+                    st.info(
+                        f"Overall Athlete Rating: {round(overall_score,2)}/100"
+                    )
                 else:
 
                     st.warning("Please Register Athlete First")
@@ -731,6 +1110,7 @@ else:
                 )
 
                 records = cursor.fetchall()
+               
 
                 # =====================================
                 # CHECK DATA EXISTS
@@ -756,9 +1136,56 @@ else:
                             "Weight",
                             "Sprint Time",
                             "Endurance",
-                            "Vertical Jump"
+                            "Vertical Jump",
+                            "Predicted Event",
+                            "Recommendation",
+                            "Training Plan",
+                            "Image"
                         ]
                     )
+
+
+                    st.subheader("📊 History Summary")
+
+                    col1, col2, col3 = st.columns(3)
+
+                    with col1:
+                        st.metric(
+                            "Total Athletes",
+                            len(history_df)
+                        )
+
+                    with col2:
+                        st.metric(
+                            "Average Age",
+                            round(history_df["Age"].mean(), 1)
+                        )
+
+                    with col3:
+                        st.metric(
+                            "Average Height",
+                            round(history_df["Height"].mean(), 1)
+                        )    
+
+                
+
+                        
+                    st.subheader("📋 Athlete Records")
+
+                    search_name = st.text_input(
+                        "🔍 Search Athlete"
+                    )
+
+                    if search_name:
+
+                        history_df = history_df[
+                            history_df["Name"]
+                            .str.contains(
+                                search_name,
+                                case=False
+                            )
+                        ]
+                                        
 
                     # =====================================
                     # DISPLAY TABLE
@@ -768,7 +1195,7 @@ else:
 
                         history_df,
 
-                        use_container_width=True
+                        width="stretch"
                     )
 
                     st.success(
@@ -808,41 +1235,119 @@ else:
 
                 if athlete:
 
-                    st.subheader("Profile Information")
+                    (
+                        bmi,
+                        sprint_score,
+                        endurance_score,
+                        jump_score,
+                        overall_score
+                    ) = calculate_scores()
 
-                    st.write(f"Name: {athlete[1]}")
-                    st.write(f"Age: {athlete[2]}")
-                    st.write(f"Gender: {athlete[3]}")
-                    st.write(f"Height: {athlete[4]} cm")
-                    st.write(f"Weight: {athlete[5]} kg")
+                    # Athlete Profile Card
 
-                    st.subheader("Athletic Information")
+                    # =====================================
+                    # ATHLETE PROFILE CARD
+                    # =====================================
 
-                    st.write(f"Sprint Time: {athlete[6]}")
-                    st.write(f"Endurance: {athlete[7]}")
-                    st.write(f"Vertical Jump: {athlete[8]}")
+                    col1, col2 = st.columns([1, 3])
 
-                    st.subheader("Specialization")
+                    with col1:
 
-                    st.success(athlete[9])
+                        if athlete[12] != "":
 
-                    st.subheader("Achievements")
+                            st.image(
+                                athlete[12],
+                                width=150
+                            )
 
-                    st.info(athlete[10])
+                        else:
 
-                    st.subheader("Injury History")
+                            st.image(
+                                "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                                width=120
+    )
+                    with col2:
 
-                    st.warning(athlete[11])
+                        st.markdown(
+                            f"""
+                    ### {athlete[1]}
 
-                    st.subheader("Profile Photo")
+                    🏃 Event: {athlete[9]}
 
-                    if athlete[12] != "":
+                    🎂 Age: {athlete[2]}
 
-                        st.write(athlete[12])
+                    ⚥ Gender: {athlete[3]}
 
-                    else:
+                    📏 Height: {athlete[4]} cm
 
-                        st.write("No profile photo uploaded")
+                    ⚖️ Weight: {athlete[5]} kg
+                    """
+                        )
+
+                    st.divider()
+
+                    # =====================================
+                    # KPI SECTION
+                    # =====================================
+
+                    bmi_height = athlete[4] / 100
+
+                    bmi = athlete[5] / (bmi_height * bmi_height)
+
+                    col1, col2, col3, col4, col5 = st.columns(5)
+
+                    with col1:
+                        st.metric(
+                            "BMI",
+                            round(bmi, 2)
+                        )
+
+                    with col2:
+                        st.metric(
+                            "Sprint",
+                            sprint_score
+                        )
+
+                    with col3:
+                        st.metric(
+                            "Endurance",
+                            endurance_score
+                        )
+
+                    with col4:
+                        st.metric(
+                            "Jump",
+                            jump_score
+                        )
+
+                    with col5:
+                        st.metric(
+                            "Overall",
+                            round(overall_score, 2)
+                        )
+
+                    st.divider()
+
+                    # =====================================
+                    # ACHIEVEMENTS
+                    # =====================================
+
+                    st.subheader("🏅 Achievements")
+
+                    st.success(
+                        athlete[10]
+                    )
+
+                    # =====================================
+                    # INJURY HISTORY
+                    # =====================================
+
+                    st.subheader("🩺 Injury History")
+
+                    st.warning(
+                        athlete[11]
+                    )
+
 
                 else:
 
@@ -877,6 +1382,8 @@ else:
 
                         uploaded_video.name
                     )
+                    st.session_state.video_path = video_path
+
 
                     # =====================================
                     # SAVE VIDEO
@@ -935,10 +1442,11 @@ else:
             # =================================
             # RECOMMENDATIONS
             # =================================
+            
 
             if coach_menu == "Recommendations":
 
-                st.header("Dynamic AI Recommendations")
+                st.header(" 🤖 AI Performance Recommendations")
 
                 if st.session_state.data_saved:
 
@@ -950,34 +1458,198 @@ else:
                         overall_score
                     ) = calculate_scores()
 
+
+                    # =====================================
+                    # ATHLETE PROFILE CARD
+                    # =====================================
+
+                    col1, col2 = st.columns([1, 3])
+
+                    with col1:
+
+                        if "profile_photo" in st.session_state and st.session_state.profile_photo:
+                            st.image(
+                                st.session_state.profile_photo,
+                                width=120
+                            )
+
+                    with col2:
+
+                        st.markdown(
+                            f"""
+                    ### {st.session_state.name}
+
+                    🏃 **{st.session_state.specialization}**
+
+                    📏 **{st.session_state.height} cm**
+
+                    ⚖️ **{st.session_state.weight} kg**
+                    """
+                        )
+
+                    st.divider()
+
+                    st.header("Athlete Performance Dashboard")
+
+                    col1, col2, col3, col4 = st.columns(4)
+
+                    with col1:
+                        st.metric("Sprint", sprint_score)
+
+                    with col2:
+                        st.metric("Endurance", endurance_score)
+
+                    with col3:
+                        st.metric("Jump", jump_score)
+
+                    with col4:
+                        st.metric(
+                            "Overall",
+                            round(overall_score, 2)
+                        )
+
+                    video_path = st.session_state.get(
+                        "video_path",
+                        None
+                    )
+
                     ai_report = get_complete_ai_report(
                         athlete_data=st.session_state,
                         sprint_score=sprint_score,
                         endurance_score=endurance_score,
-                        jump_score=jump_score
+                        jump_score=jump_score,
+                        video_path=video_path
                     )
 
-                    st.subheader("AI Recommendations")
+                    st.subheader("🎯 AI Recommendations")
 
-                    for r in ai_report["recommendations"]:
-                            st.write("•", r)
+                    for rec in ai_report["recommendations"]:
+                        st.success(rec)
 
-                    st.subheader("Training Plan")
-                    st.write(ai_report["training_plan"])
+                    st.subheader("📅 Weekly Training Plan")
 
-                    st.subheader("Insights")
-                    st.write(ai_report["insights"])
+                    for day, activities in ai_report["training_plan"].items():
 
-                    st.subheader("Progress")
-                    st.write(ai_report["progress"])
+                        with st.expander(day):
 
-                    st.subheader("Goals")
-                    st.write(ai_report["goals"])
+                            for activity in activities:
 
-                    st.subheader("Biomechanics")
-                    st.write(ai_report["biomechanics"])
+                                st.write("✅", activity)
+
+                    insights = ai_report["insights"]
+
+                    st.subheader(" 🧠 AI Insights")
+
+                    st.success(
+                        f"Performance Status: {insights['performance_status']}"
+                    )
+
+                    st.warning(
+                        f"Injury Status: {insights['injury_status']}"
+                    )
+
+                    st.write(
+                        f"Injury Risk Score: {insights['injury_risk_score']}"
+                    )
+
+                    st.write("⚠ Risk Alerts")
+
+                    for alert in insights["risk_alerts"]:
+
+                        st.error(alert)
 
                     
+
+                    progress = ai_report["progress"]
+
+                    progress_df = pd.DataFrame({
+                        "Week": progress["weeks"],
+                        "Sprint": progress["sprint_scores"],
+                        "Endurance": progress["endurance_scores"],
+                        "Jump": progress["jump_scores"]
+                    })
+
+                    st.subheader(" 📈 Performance Progress")
+
+                    st.line_chart(
+                        progress_df.set_index("Week")
+                    )
+
+                    st.write(
+                        f"Improvement Rate: {progress['improvement']}%"
+                    )
+
+                    st.write(
+                        f"Status: {progress['status']}"
+                    )
+
+                    goals = ai_report["goals"]
+
+                    st.subheader("🎯 Goal Tracking")
+
+                    st.write("Sprint Progress")
+                    st.progress(goals["sprint_progress"] / 100)
+
+                    st.write("Endurance Progress")
+                    st.progress(goals["endurance_progress"] / 100)
+
+                    st.write("Jump Progress")
+                    st.progress(goals["jump_progress"] / 100)
+
+                    st.write("Overall Progress")
+                    st.progress(goals["overall_progress"] / 100)
+
+                    st.success(
+                        goals["motivation"]
+                    )
+
+                    
+                    bio = ai_report["biomechanics"]
+                    # st.write("DEBUG:", bio)
+
+                    st.subheader("🏃 Biomechanics")
+
+                    col1, col2, col3 = st.columns(3)
+
+                    with col1:
+                        st.metric(
+                            "Pose Score",
+                            bio["pose"]["pose_score"]
+                        )
+
+                    with col2:
+                        st.metric(
+                            "Knee Angle",
+                            round(
+                                bio["knee_angle"]["average_knee_angle"],
+                                1
+                            )
+                        )
+
+                    with col3:
+                        st.metric(
+                            "Speed Score",
+                            round(
+                                bio["speed"]["speed_score"],
+                                4
+                            )
+                        )
+
+                    st.info(
+                        f"Posture: {bio['pose']['posture']}"
+                    )
+
+                    st.info(
+                        f"Stride Quality: {bio['stride']['stride_quality']}"
+                    )
+
+                    st.info(
+                        f"Running Form: {bio['running_form']['posture']}"
+                    )
+
+                    st.info(
+                        f"Speed Status: {bio['speed']['speed_status']}"
+                    )        
 
                 else:
 
@@ -990,11 +1662,36 @@ else:
 
             elif coach_menu == "Workout Guidance":
 
-                st.header("Workout Guidance")
+                st.header("💪 Workout Guidance")
 
-                st.write("Morning Sprint Training")
-                st.write("Strength Training")
-                st.write("Recovery Session")
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    st.info("""
+                🏃 Sprint Training
+
+                Duration: 30 min
+
+                Intensity: High
+                """)
+
+                with col2:
+                    st.info("""
+                🏋 Strength Training
+
+                Duration: 45 min
+
+                Intensity: Medium
+                """)
+
+                with col3:
+                    st.info("""
+                🧘 Recovery Session
+
+                Duration: 20 min
+
+                Intensity: Low
+                """)
 
                             # =================================
                             # IMPROVEMENT ANALYSIS
@@ -1002,10 +1699,19 @@ else:
 
             elif coach_menu == "Improvement Analysis":
 
-                st.header("Improvement Analysis")
+                st.header("📈 Improvement Analysis")
 
-                st.write("Weak Area: Endurance")
-                st.write("Suggested: Long-distance runs")
+                st.success(
+                    "Strength: Sprint Performance"
+                )
+
+                st.warning(
+                    "Weak Area: Endurance"
+                )
+
+                st.info(
+                    "Focus Area: Long-distance running and aerobic training"
+                )
 
                             # =================================
                             # MOTIVATION SYSTEM
@@ -1013,10 +1719,19 @@ else:
 
             elif coach_menu == "Motivation System":
 
-                st.header("Motivation System")
+                st.header("🏅 Motivation System")
 
                 st.success(
                     "Consistency builds champions!"
+                )
+
+                st.metric(
+                    "Weekly Goal",
+                    "5/7 Sessions Completed"
+                )
+
+                st.info(
+                    "Achievement Badge: Rising Athlete 🚀"
                 )
 
                             # =================================
@@ -1025,11 +1740,49 @@ else:
 
             elif coach_menu == "Future Diet Planner":
 
-                st.header("Diet Planner")
+                st.header("🥗 Diet Planner")
 
-                st.write("High Protein Diet")
-                st.write("Hydration Tracking")
-                st.write("Balanced Carbohydrates")
+                col1, col2 = st.columns(2)
+
+                with col1:
+
+                    st.success("""
+                🍳 Breakfast
+
+                Oats
+
+                Eggs
+
+                Banana
+                """)
+
+                    st.success("""
+                🍛 Lunch
+
+                Rice
+
+                Chicken
+
+                Vegetables
+                """)
+
+                with col2:
+
+                    st.success("""
+                🥗 Dinner
+
+                Salad
+
+                Paneer/Fish
+
+                Milk
+                """)
+
+                    st.success("""
+                💧 Hydration
+
+                3-4 Litres Water
+                """)
 
     # =====================================
     # COACH DASHBOARD
@@ -1095,7 +1848,7 @@ else:
 
             st.dataframe(
                 df,
-                use_container_width=True
+                width="stretch"
             )
 
             st.subheader("Overall Athlete Rankings")

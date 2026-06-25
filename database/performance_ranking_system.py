@@ -11,7 +11,7 @@ import pandas as pd
 # =====================================
 
 connection = sqlite3.connect(
-    "athletics_database.db"
+    "database/athletics.db"
 )
 
 # =====================================

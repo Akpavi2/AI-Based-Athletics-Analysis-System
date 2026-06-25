@@ -53,6 +53,8 @@ frame_count = 0
 # PROCESS VIDEO
 # =====================================
 
+frame_number = 0
+
 while cap.isOpened():
 
     success, frame = cap.read()
@@ -60,7 +62,10 @@ while cap.isOpened():
     if not success:
         break
 
-    frame_count += 1
+    frame_number += 1
+
+    if frame_number % 10!= 0:
+        continue
 
     # =================================
     # RGB CONVERSION

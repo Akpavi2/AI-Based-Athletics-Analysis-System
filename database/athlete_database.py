@@ -17,6 +17,22 @@ connection = sqlite3.connect(
 cursor = connection.cursor()
 
 
+
+connection.commit()
+
+cursor.execute("""
+DELETE FROM athletes
+WHERE name = '00'
+""")
+
+# connection.commit()
+
+
+connection.commit()
+
+print("Test records deleted")
+
+
 # =====================================
 # CREATE ATHLETES TABLE
 # =====================================
@@ -70,10 +86,14 @@ print("Database Connected Successfully")
 # SHOW ALL ATHLETES
 # =====================================
 
-cursor.execute(
-    "SELECT * FROM athletes"
-)
+cursor.execute("""
+SELECT COUNT(*)
+FROM athletes
+""")
 
+total = cursor.fetchone()[0]
+
+print(f"Total Athletes: {total}")
 records = cursor.fetchall()
 
 print("\n===== ATHLETE RECORDS =====")
@@ -105,5 +125,10 @@ CREATE TABLE IF NOT EXISTS users (
 
 connection.commit()
 
+
+
+
+
+connection.commit()
 print("Users Table Ready")
 
