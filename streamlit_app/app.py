@@ -900,7 +900,7 @@ else:
 
                     st.dataframe(
                         summary_df,
-                        width="Stretch"
+                        width="stretch"
                     )    
 
                 else:
