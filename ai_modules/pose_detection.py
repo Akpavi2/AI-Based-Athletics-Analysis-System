@@ -4,24 +4,21 @@
 
 import cv2
 import mediapipe as mp
+
 print("=" * 60)
 print("DEBUGGING MEDIAPIPE")
 print("Loaded from:", mp.__file__)
 print("Version:", getattr(mp, "__version__", "Unknown"))
 print("Has solutions:", hasattr(mp, "solutions"))
-
-if hasattr(mp, "solutions"):
-    print("Solutions module:", mp.solutions)
-
-print("=" * 60)
-print("MediaPipe Version:", mp.__version__)
+print("dir(mp):")
 print(dir(mp))
+print("=" * 60)
 
 # =====================================
 # INITIALIZE MEDIAPIPE
 # =====================================
 
-mp_pose = mp.solutions.pose
+# mp_pose = mp.solutions.pose
 
 # =====================================
 # POSE DETECTION FUNCTION
