@@ -3,19 +3,14 @@
 # =====================================
 
 import cv2
-import mediapipe as mp
-
-# =====================================
-# INITIALIZE MEDIAPIPE
-# =====================================
-
-mp_pose = mp.solutions.pose
 
 # =====================================
 # STRIDE ANALYSIS FUNCTION
 # =====================================
 
 def analyze_stride(video_path):
+    import mediapipe as mp
+    mp_pose = mp.solutions.pose
 
     pose = mp_pose.Pose(
 

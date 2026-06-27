@@ -3,28 +3,17 @@
 # =====================================
 
 import cv2
-import mediapipe as mp
 
-print("=" * 60)
-print("DEBUGGING MEDIAPIPE")
-print("Loaded from:", mp.__file__)
-print("Version:", getattr(mp, "__version__", "Unknown"))
-print("Has solutions:", hasattr(mp, "solutions"))
-print("dir(mp):")
-print(dir(mp))
-print("=" * 60)
 
-# =====================================
-# INITIALIZE MEDIAPIPE
-# =====================================
-
-# mp_pose = mp.solutions.pose
-
+#
 # =====================================
 # POSE DETECTION FUNCTION
 # =====================================
 
 def detect_pose(video_path):
+    import mediapipe as mp
+    mp_pose = mp.solutions.pose
+
 
     # =================================
     # CREATE NEW POSE OBJECT

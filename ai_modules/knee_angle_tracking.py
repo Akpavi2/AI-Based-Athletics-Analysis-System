@@ -3,22 +3,18 @@
 # =====================================
 
 import cv2
-import mediapipe as mp
 import math
-
-# =====================================
-# INITIALIZE MEDIAPIPE
-# =====================================
-
-mp_pose = mp.solutions.pose
-
-pose = mp_pose.Pose()
 
 # =====================================
 # ANGLE CALCULATION FUNCTION
 # =====================================
 
 def calculate_angle(a, b, c):
+
+    import mediapipe as mp
+    mp_pose = mp.solutions.pose
+
+    pose = mp_pose.Pose()
 
     ax, ay = a
     bx, by = b

@@ -3,21 +3,16 @@
 # =====================================
 
 import cv2
-import mediapipe as mp
 import math
-
-# =====================================
-# MEDIAPIPE
-# =====================================
-
-mp_pose = mp.solutions.pose
-
 
 # =====================================
 # MAIN VIDEO ANALYSIS FUNCTION
 # =====================================
 
 def analyze_video(video_path):
+
+    import mediapipe as mp
+    mp_pose = mp.solutions.pose
 
     pose = mp_pose.Pose(
         static_image_mode=False,

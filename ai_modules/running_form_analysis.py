@@ -3,19 +3,20 @@
 # =====================================
 
 import cv2
-import mediapipe as mp
 
-# =====================================
-# INITIALIZE MEDIAPIPE
-# =====================================
 
-mp_pose = mp.solutions.pose
+
+
+
 
 # =====================================
 # RUNNING FORM ANALYSIS
 # =====================================
 
 def analyze_running_form(video_path):
+
+    import mediapipe as mp
+    mp_pose = mp.solutions.pose
 
     pose = mp_pose.Pose(
         static_image_mode=False,
